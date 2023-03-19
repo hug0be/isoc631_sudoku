@@ -1,6 +1,16 @@
 # coding: utf-8
+from random import randint
 
 class InvalidSudokuException(Exception): pass
+
+class SudokuGenerator:
+    @staticmethod
+    def random():
+        """ Génère un sudoku avec des éléments aléatoires """
+        return Sudoku([
+            [randint(0,9) for _ in range(9)]
+            for _ in range(9)
+        ])
 
 class Sudoku:
     def __init__(self, array:list[list[int]]):
