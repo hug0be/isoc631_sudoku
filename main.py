@@ -4,13 +4,7 @@ class InvalidSudokuException(Exception): pass
 
 class Sudoku:
     def __init__(self, array:list[list[int]]):
-        # Validation du tableau donné
-        if len(array) != 9:
-            raise InvalidSudokuException(f"Un sudoku doit avoir 9 lignes, ici il y en a {len(array)}")
-        for i, line in enumerate(array):
-            if len(line) != 9:
-                raise InvalidSudokuException(f"Une ligne de sudoku doit avoir 9 éléments, ici, la ligne {i} en a {len(line)}")
-
+        self.is_sudoku(array)
         self.array = array
 
     def valid(self):
@@ -49,6 +43,16 @@ class Sudoku:
             )
             for digit in range(1,10)
         )
+
+    @staticmethod
+    def is_sudoku(array):
+        # Validation du tableau donné
+        if len(array) != 9:
+            raise InvalidSudokuException(f"Un sudoku doit avoir 9 lignes, ici il y en a {len(array)}")
+        for i, line in enumerate(array):
+            if len(line) != 9:
+                raise InvalidSudokuException(
+                    f"Une ligne de sudoku doit avoir 9 éléments, ici, la ligne {i} en a {len(line)}")
 
     def __getitem__(self, key)->list:
         if isinstance(key, int):
