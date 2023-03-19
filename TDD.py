@@ -1,7 +1,8 @@
 # coding: utf-8
 from timeit import timeit
 
-from main import Sudoku, InvalidSudokuException
+from main import Sudoku, InvalidSudokuException, SudokuGenerator
+
 
 class TestFail(Exception): pass
 
@@ -28,7 +29,7 @@ def test_sudoku_constructor():
                  [1,2,3,4,5,6,7,8]])
     except InvalidSudokuException: pass
 
-def test_clauses_creator():
+def test_sudoku_verifier():
     global sudoku
 
     # On prend un sudoku complet et on enlève le chiffre du milieu
@@ -64,14 +65,16 @@ def test_clauses_creator():
         print(sudoku)
         raise TestFail(f"Le sudoku complet est invalidé")
 
-def test_sudoku_verifier(): raise TestFail("Non implémenté")
-
-def test_sudoku_generator(): raise TestFail("Non implémenté")
+def test_sudoku_generator():
+    for _ in range(100):
+        try:
+            SudokuGenerator.random()
+        except InvalidSudokuException as ex:
+            raise TestFail(ex)
 
 if __name__ == "__main__":
     tests = [
         test_sudoku_constructor,
-        test_clauses_creator,
         test_sudoku_verifier,
         test_sudoku_generator,
     ]
