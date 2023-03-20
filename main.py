@@ -16,7 +16,7 @@ class Sudoku(np.ndarray):
         return obj
 
     def is_valid(self):
-        """ Valide le sudoku """
+        """ Test la validité du sudoku """
         # Validation des lignes et colonnes
         for i in range(9):
             row = self[i, :]
@@ -33,15 +33,21 @@ class Sudoku(np.ndarray):
 
         return True
 
+    def random_solve_attempt(self):
+        """ Retourne une liste d'entiers aléatoires générés dans l'objectif de résoudre le Sudoku"""
+        rss = np.copy(self) # rds : Randomly Solved Sudoku
+        rss[rss == 0] = np.random.randint(1, 10, size=np.count_nonzero(rss == 0))
+        return rss
+
     @staticmethod
     def clause(elements):
-        """ Valide 9 éléments """
+        """ Test la validité de 9 éléments """
         unique, counts = np.unique(elements, return_counts=True)
         return len(unique) == len(elements) - (0 in unique) and np.all(counts[1:] <= 1)
 
     @staticmethod
     def is_sudoku(array):
-        # Validation du tableau donné
+        """ Test si le tableau donné est une grille de sudoku """
         if len(array) != 9:
             raise InvalidSudokuException(f"Un sudoku doit avoir 9 lignes, ici il y en a {len(array)}")
         for i, line in enumerate(array):

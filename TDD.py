@@ -1,6 +1,6 @@
 # coding: utf-8
 from timeit import timeit
-
+import numpy as np
 from main import Sudoku, InvalidSudokuException, SudokuGenerator
 
 
@@ -68,11 +68,30 @@ def test_sudoku_generator():
         except InvalidSudokuException as ex:
             raise TestFail(ex)
 
+def test_random_solver():
+    test_sudoku:Sudoku = Sudoku([
+        [0, 1, 6, 5, 7, 8, 4, 9, 2],
+        [0, 2, 9, 1, 3, 4, 7, 6, 8],
+        [0, 8, 7, 6, 2, 9, 5, 3, 1],
+        [0, 6, 3, 4, 1, 5, 9, 8, 7],
+        [0, 7, 4, 8, 6, 3, 1, 2, 5],
+        [0, 5, 1, 7, 9, 2, 6, 4, 3],
+        [0, 3, 8, 9, 4, 7, 2, 5, 6],
+        [0, 9, 2, 3, 5, 1, 8, 7, 4],
+        [0, 4, 5, 2, 8, 6, 3, 1, 9]
+    ])
+
+    # Test si tous les éléments vides sont remplis
+    for i in range(100):
+        rss = test_sudoku.random_solve_attempt()
+        if np.any(rss == 0): raise TestFail(f"Il reste un zéro après un RSA (essai n°{i})")
+
 if __name__ == "__main__":
     tests = [
         test_sudoku_constructor,
         test_sudoku_verifier,
         test_sudoku_generator,
+        test_random_solver
     ]
 
     # Running tests
