@@ -34,9 +34,10 @@ class Sudoku(np.ndarray):
 
     def random_solve_attempt(self):
         """ Retourne une liste d'entiers aléatoires générés dans l'objectif de résoudre le Sudoku"""
-        rss = np.copy(self) # rds : Randomly Solved Sudoku
-        rss[rss == 0] = np.random.randint(1, 10, size=np.count_nonzero(rss == 0))
-        return rss
+        rse = np.copy(self) # rse : Randomly Solved Elements
+        rse = rse[rse==0]
+        rse = np.random.randint(1, 10, size=np.count_nonzero(rse == 0))
+        return rse
 
     @staticmethod
     def clause(elements):
