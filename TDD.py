@@ -1,6 +1,7 @@
 # coding: utf-8
 from timeit import timeit
 import numpy as np
+from pybloom import BloomFilter
 from main import Sudoku, InvalidSudokuException, SudokuGenerator
 
 
@@ -18,6 +19,41 @@ sudoku = Sudoku([
     [7,4,5,2,8,6,3,1,9]
 ])
 
+hardSudoku = Sudoku([
+    [0, 1, 6, 5, 7, 8, 4, 9, 2],
+    [0, 2, 9, 1, 3, 4, 7, 6, 8],
+    [0, 8, 7, 6, 2, 9, 5, 3, 1],
+    [0, 6, 3, 4, 1, 5, 9, 8, 7],
+    [0, 7, 4, 8, 6, 3, 1, 2, 5],
+    [0, 5, 1, 7, 9, 2, 6, 4, 3],
+    [0, 3, 8, 9, 4, 7, 2, 5, 6],
+    [0, 9, 2, 3, 5, 1, 8, 7, 4],
+    [0, 4, 5, 2, 8, 6, 3, 1, 9]
+])
+
+easySudoku = Sudoku([
+    [0, 1, 6, 5, 7, 8, 4, 9, 2],
+    [0, 2, 9, 1, 3, 4, 7, 6, 8],
+    [4, 8, 7, 6, 2, 9, 5, 3, 1],
+    [2, 6, 3, 4, 1, 5, 9, 8, 7],
+    [9, 7, 4, 8, 6, 3, 1, 2, 5],
+    [8, 5, 1, 7, 9, 2, 6, 4, 3],
+    [1, 3, 8, 9, 4, 7, 2, 5, 6],
+    [6, 9, 2, 3, 5, 1, 8, 7, 4],
+    [7, 4, 5, 2, 8, 6, 3, 1, 9]
+])
+
+mediumSudoku = Sudoku([
+    [0, 1, 6, 5, 7, 8, 4, 9, 2],
+    [0, 2, 9, 1, 3, 4, 7, 6, 8],
+    [0, 8, 7, 6, 2, 9, 5, 3, 1],
+    [0, 6, 3, 4, 1, 5, 9, 8, 7],
+    [0, 7, 4, 8, 6, 3, 1, 2, 5],
+    [8, 5, 1, 7, 9, 2, 6, 4, 3],
+    [1, 3, 8, 9, 4, 7, 2, 5, 6],
+    [6, 9, 2, 3, 5, 1, 8, 7, 4],
+    [7, 4, 5, 2, 8, 6, 3, 1, 9]
+])
 def test_sudoku_constructor():
     try: Sudoku([])
     except InvalidSudokuException: pass
@@ -75,29 +111,54 @@ def test_sudoku_generator():
             raise TestFail(ex)
 
 def test_random_solver():
-    test_sudoku:Sudoku = Sudoku([
-        [0, 1, 6, 5, 7, 8, 4, 9, 2],
-        [0, 2, 9, 1, 3, 4, 7, 6, 8],
-        [0, 8, 7, 6, 2, 9, 5, 3, 1],
-        [0, 6, 3, 4, 1, 5, 9, 8, 7],
-        [0, 7, 4, 8, 6, 3, 1, 2, 5],
-        [0, 5, 1, 7, 9, 2, 6, 4, 3],
-        [0, 3, 8, 9, 4, 7, 2, 5, 6],
-        [0, 9, 2, 3, 5, 1, 8, 7, 4],
-        [0, 4, 5, 2, 8, 6, 3, 1, 9]
-    ])
-
-    # Test si tous les éléments vides sont remplis
     for i in range(100):
-        rss = test_sudoku.random_solve_attempt()
-        if np.any(rss == 0): raise TestFail(f"Il reste un zéro après un RSA (essai n°{i})")
+        # On s'apprête à modifier hardSudoku
+        # On fait une copie pour ne pas modifier l'original
+        wrongSudokuTest = hardSudoku.copy()
+
+        # On obtient le RSE (Randomly Solved Elements)
+        rse = wrongSudokuTest.random_solve_attempt()
+        if np.any(rse == 0): raise TestFail(f"Il reste un zéro dans le RSE (essai n°{i})")
+        if rse.size != 9: raise TestFail(f"Le RSE n'a pas 9 éléments (essai n°{i})")
+
+        # Si le test trouve la solution (ce qui serait incroyablement rare) on arrête tout !
+        np.place(wrongSudokuTest, wrongSudokuTest==0, rse)
+        if np.array_equal(rse, np.ndarray([3,5,4,2,9,8,1,6,7])):
+            print("Wow ! Le test à trouvé la solution ! C'est 1 chance sur 9^9 !")
+            break
+
+def test_bloom_filter():
+    for difficulty, testSudoku in [
+        ("simple", easySudoku),
+        ("moyen", mediumSudoku),
+        ("difficile", hardSudoku)
+    ]:
+        bloomFilter = BloomFilter(capacity=1000, error_rate=1e-6)
+        for i in range(bloomFilter.capacity+2):
+            # On obtient un RSE (Randomly Solved Elements) de testSudoku
+            rse = testSudoku.random_solve_attempt()
+
+            try:
+            # On continue si l'élément n'est pas dans le filtre
+                if not bloomFilter.add(rse): continue
+
+            # Cas où l'élément était déjà dans la liste
+                print(f"\tPour le sudoku {difficulty}: {i} essais ont suffit")
+
+            # Cas où le filtre est plein
+            except IndexError:
+                print(f"\tPour le sudoku {difficulty}: Capacité max atteinte")
+
+            # On passe au prochain sudoku si les deux cas précédents ont occurré
+            break
 
 if __name__ == "__main__":
     tests = [
         test_sudoku_constructor,
         test_sudoku_verifier,
         test_sudoku_generator,
-        test_random_solver
+        test_random_solver,
+        test_bloom_filter
     ]
 
     # Running tests
