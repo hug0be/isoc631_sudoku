@@ -1,5 +1,5 @@
 # coding: utf-8
-from random import randint
+import numpy as np
 
 class InvalidSudokuException(Exception): pass
 
@@ -7,52 +7,37 @@ class SudokuGenerator:
     @staticmethod
     def random():
         """ Génère un sudoku avec des éléments aléatoires """
-        return Sudoku([
-            [randint(0,9) for _ in range(9)]
-            for _ in range(9)
-        ])
+        return Sudoku(np.random.randint(0, 10, size=(9, 9)))
 
-class Sudoku:
-    def __init__(self, array:list[list[int]]):
-        self.is_sudoku(array)
-        self.array = array
+class Sudoku(np.ndarray):
+    def __new__(cls, array:list[list[int]] | np.ndarray):
+        Sudoku.is_sudoku(array)
+        obj = np.asarray(array).view(cls)
+        return obj
 
-    def valid(self):
+    def is_valid(self):
         """ Valide le sudoku """
-        validation_function = self.clause()
-
-        # Validation des lignes
-        for line in self.array:
-            if not validation_function(line): return False
-
-        # Validation des colonnes
-        for column in zip(*self.array):
-            if not validation_function(column): return False
+        # Validation des lignes et colonnes
+        for i in range(9):
+            row = self[i, :]
+            col = self[:, i]
+            if not self.clause(row) or not self.clause(col):
+                return False
 
         # Validation des régions
-        for i in [1,4,7]:
-            for j in [1,4,7]:
-                region = [
-                    self[i-1][j-1], self[i-1][j], self[i-1][j+1],
-                    self[i][j-1], self[i][j], self[i][j+1],
-                    self[i+1][j-1], self[i+1][j], self[i+1][j+1],
-                ]
-                if not validation_function(region): return False
+        for i in range(0, 9, 3):
+            for j in range(0, 9, 3):
+                square = self[i:i + 3, j:j + 3]
+                if not self.clause(square.flatten()):
+                    return False
 
         return True
 
-
     @staticmethod
-    def clause():
-        """ Retourne la fonction qui teste la validité de 9 éléments """
-        """ Traduction directe de l'implémentation Isabelle/HOL """
-        return lambda elements: all(
-            any(
-                element == digit
-                for element in elements
-            )
-            for digit in range(1,10)
-        )
+    def clause(elements):
+        """ Valide 9 éléments """
+        unique, counts = np.unique(elements, return_counts=True)
+        return len(unique) == len(elements) - (0 in unique) and np.all(counts[1:] <= 1)
 
     @staticmethod
     def is_sudoku(array):
@@ -61,16 +46,7 @@ class Sudoku:
             raise InvalidSudokuException(f"Un sudoku doit avoir 9 lignes, ici il y en a {len(array)}")
         for i, line in enumerate(array):
             if len(line) != 9:
-                raise InvalidSudokuException(
-                    f"Une ligne de sudoku doit avoir 9 éléments, ici, la ligne {i} en a {len(line)}")
-
-    def __getitem__(self, key)->list:
-        if isinstance(key, int):
-            return self.array[key]
-        raise KeyError(f"{key.__class__.__name__} n'est pas une clé valide")
-
-    def __str__(self):
-        return self.array.__str__()
+                raise InvalidSudokuException(f"Une ligne de sudoku doit avoir 9 éléments, ici, la ligne {i} en a {len(line)}")
 
 if __name__ == "__main__":
     pass

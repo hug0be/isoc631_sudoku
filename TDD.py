@@ -35,9 +35,6 @@ def test_sudoku_verifier():
     # On prend un sudoku complet et on enlève le chiffre du milieu
     sudoku[4][4] = 0
 
-    # On récupère sa fonction de clause
-    res = sudoku.clause()
-
     # On initialise les valeurs de test (éléments | résultat attendu)
     test_elements_answer = [
         # Test de la 1ère et 5ᵉ ligne
@@ -53,16 +50,15 @@ def test_sudoku_verifier():
 
     # On lance les tests
     for elements, answer in test_elements_answer:
-        if res(elements) != answer:
+        if sudoku.clause(elements) != answer:
             raise TestFail(f"Une clause n'a pas retourné {answer} (éléments: {elements})")
 
     # Test final sur l'entièreté du sudoku
-    if sudoku.valid():
+    if sudoku.is_valid():
         raise TestFail(f"Le sudoku incomplet est validé")
 
     sudoku[4][4] = 6
-    if not sudoku.valid():
-        print(sudoku)
+    if not sudoku.is_valid():
         raise TestFail(f"Le sudoku complet est invalidé")
 
 def test_sudoku_generator():
