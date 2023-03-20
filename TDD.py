@@ -21,13 +21,19 @@ sudoku = Sudoku([
 def test_sudoku_constructor():
     try: Sudoku([])
     except InvalidSudokuException: pass
+    else: raise TestFail(f"Sudoku([]) n'a pas renvoyé d'erreur")
+
     try: Sudoku([[1,2,3,4,5,6,7,8,9]])
     except InvalidSudokuException: pass
+    else: raise TestFail(f"Sudoku([[1 ... 9]]) n'a pas renvoyé d'erreur")
+
     try: Sudoku([[1,2,3,4,5,6,7,8]])
     except InvalidSudokuException: pass
-    try: Sudoku([[1,2,3,4,5,6,7,8,9],
-                 [1,2,3,4,5,6,7,8]])
+    else: raise TestFail(f"Sudoku([[1 ... 8]]) n'a pas renvoyé d'erreur")
+
+    try: Sudoku([[1,2,3,4,5,6,7,8,9], [1,2,3,4,5,6,7,8]])
     except InvalidSudokuException: pass
+    else: raise TestFail(f"Sudoku([[1 ... 9],[1 ... 8]) n'a pas renvoyé d'erreur")
 
 def test_sudoku_verifier():
     global sudoku

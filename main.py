@@ -19,8 +19,7 @@ class Sudoku(np.ndarray):
         """ Test la validité du sudoku """
         # Validation des lignes et colonnes
         for i in range(9):
-            row = self[i, :]
-            col = self[:, i]
+            row, col = self[i, :], self[:, i]
             if not self.clause(row) or not self.clause(col):
                 return False
 
